@@ -1,0 +1,28 @@
+sdr:
+  ip: 10.0.0.10
+  gain_db: 23
+radio:
+  center_freq: 100306000
+  samp_rate: 16384000
+channelizer:
+  num_channels: 64
+  oversample: 2
+  atten_db: 60
+  proto_semilen_m: 8
+  block_size: 131072
+fm:
+  deviation: 75000
+  tau: 50e-6
+  intermediate_rate: 64000
+  predemod_transition: 20000
+audio:
+  rate: 32000
+  bandwidth: 15000
+  stop_bandwidth: 19000
+udp:
+  host: 0.0.0.0
+  mtu: 1316
+scan:
+  nfft: 4096
+  average_ms: 700
+  threshold_db: 8.0

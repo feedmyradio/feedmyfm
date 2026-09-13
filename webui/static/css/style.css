@@ -1,0 +1,478 @@
+:root {
+  color-scheme: light dark;
+  --fg: #1a1a1a;
+  --bg: #fafafa;
+  --border: #ddd;
+  --accent: #2563eb;
+  /* Background for the demoted weak-signal group (see .station.is-weak) --
+     a hair off the page background, just enough to read as "set aside". */
+  --weak-bg: #f0f0f1;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fg: #eee;
+    --bg: #16181d;
+    --border: #333;
+    --weak-bg: #1d2027;
+  }
+}
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--fg);
+  background: var(--bg);
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 1rem 1.25rem 3rem;
+}
+
+/* Brand row: logo (col 1) | two stacked text rows (col 2), mirroring the
+   station-row layout below. */
+.brand {
+  display: flex;
+  align-items: center;
+  column-gap: 0.75rem;
+}
+
+.brand-logo {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+header h1 {
+  margin: 0;
+}
+
+.subtitle {
+  margin: 0.1rem 0 0;
+  color: #888;
+}
+
+.volume-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.volume-control label {
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.volume-control input[type="range"] {
+  flex: 1;
+  max-width: 200px;
+  accent-color: var(--accent);
+}
+
+/* Touch devices: no software volume path on iOS media playback anyway,
+   and hardware buttons are right there -- hide the slider. */
+@media (pointer: coarse) {
+  .volume-control {
+    display: none;
+  }
+}
+
+/* The AAC-mode <audio> element: present in the layout (not display:none,
+   which can stop a media session from attaching) but out of sight. */
+.aac-audio-el {
+  position: fixed;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.empty {
+  color: #888;
+  margin-top: 2rem;
+}
+
+ul.stations {
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0;
+  /* flex column purely so `order` can float the weak-signal group (and its
+     divider) to the bottom without reordering the DOM -- player.js binds a
+     static STATIONS list + button handlers to source order. */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Weak-signal group: player.js adds .is-weak once a station's *averaged*
+   calibrated snr_db sits below WEAK_SNR_DROP (FM fades, so it judges a
+   rolling window, not one sample). Never applied to an `idle`/no-decode
+   row or the station you're currently playing. Muted background + order:2
+   sink it under the divider, below the clear stations; still playable. */
+.station.is-weak {
+  order: 2;
+  background: var(--weak-bg);
+}
+
+.station.is-weak .station-logo,
+.station.is-weak .station-headline {
+  opacity: 0.6;
+}
+
+/* Header row player.js inserts once and shows only while something is in
+   the weak group. order:1 keeps it just above the is-weak rows. */
+.stations-weak-divider {
+  order: 1;
+  margin-top: 0.85rem;
+  padding: 0.3rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #888;
+}
+
+.stations-weak-divider[hidden] {
+  display: none;
+}
+
+.station {
+  position: relative; /* anchor for the Play button */
+  display: flex;
+  align-items: flex-start;
+  column-gap: 0.75rem;
+  padding: 0.75rem 0.5rem;
+  /* Keep the middle column clear of the vertically-centred Play button,
+     with a gap. The button footprint is right:0.5rem + min-width:5rem =
+     5.5rem; 6rem leaves ~0.5rem so a clipped RDS line's ellipsis doesn't
+     touch the button edge. It's centred vertically, so this insets every
+     stacked row uniformly. */
+  padding-right: 6rem;
+  border-bottom: 1px solid var(--border);
+}
+
+
+/* First column: the logo. A fixed square, centred against the middle
+   column's stacked rows. (Matching it to the row height dynamically isn't
+   reliable in CSS for an <img> in an auto-height row -- it either feeds
+   back on itself or falls back to the image's intrinsic size.) */
+.station-logo {
+  flex: none;
+  align-self: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  object-fit: contain;
+}
+
+/* Second column: stacked rows -- headline (name + frequency), then the
+   signal readout (STEREO + bar + dBFS/SNR), then the RDS readout last so
+   its variable-length RadioText doesn't push the reception info around. */
+.station-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+/* Row 1: station name, then the frequency on the same line (it wraps
+   under the name only when too long to share it). */
+.station-headline {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  column-gap: 0.5rem;
+  min-width: 0;
+}
+
+.station-label {
+  font-weight: 600;
+  min-width: 0;
+}
+
+/* The STEREO badge rides the signal readout line (it's a live-decode
+   indicator like the SNR figure), so the flex gap there spaces it. */
+.station-signal .badge-stereo {
+  margin-left: 0;
+}
+
+/* player.js hides the badge when the frame carries no live stereo state
+   (rx status.public.stereo off) -- the `display: inline-block` below would
+   otherwise defeat the `hidden` attribute. */
+.badge-stereo[hidden] {
+  display: none;
+}
+
+.badge-stereo {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  background: var(--accent);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  vertical-align: middle;
+  transition: background 0.3s, color 0.3s, opacity 0.3s;
+}
+
+/* stereo decoder present but currently outputting mono (auto blend to
+   mono on a weak signal, or no 19 kHz pilot lock) */
+.badge-stereo.is-mono {
+  background: var(--border);
+  color: #888;
+  opacity: 0.7;
+}
+
+.station-freq {
+  flex: none;
+  font-size: 0.85rem;
+  color: #888;
+  font-variant-numeric: tabular-nums;
+}
+
+.play-btn {
+  /* Pinned to the right edge, vertically centred in the row. The
+     headline and signal readout reserve padding-right for it; the RDS
+     line (one line, below the button's centre) runs under it. */
+  position: absolute;
+  /* Just above the row's vertical centre, so on a 4-line RDS row the
+     button's lower edge still clears the RDS line. */
+  top: calc(50% - 0.4rem);
+  transform: translateY(-50%);
+  right: 0.5rem;
+  padding: 0.4rem 1rem;
+  /* Fixed footprint so the button never resizes across Play / ... / Stop
+     (and while the loading dots animate). */
+  box-sizing: border-box;
+  min-width: 5rem;
+  text-align: center;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.play-btn.playing {
+  background: var(--accent);
+  color: white;
+}
+
+/* Between the tap and the first audio -- a mobile media element pre-buffers
+   a few seconds before it starts. The button shows just an animated
+   "." / ".." / "..." so it's clearly working, not stuck. Rendered as a
+   fixed-width clipped "..." (a width keyframe, not animated `content`, for
+   broad support) so the button doesn't jiggle; never fewer than one dot. */
+.play-btn.loading {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.play-btn.loading::after {
+  content: "...";
+  display: inline-block;
+  width: 1.3ch;
+  overflow: hidden;
+  vertical-align: bottom;
+  text-align: left;
+  white-space: pre;
+  animation: play-btn-dots 1.2s steps(3, jump-none) infinite;
+}
+@keyframes play-btn-dots {
+  from {
+    width: 0.45ch;
+  }
+  to {
+    width: 1.3ch;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .play-btn.loading::after {
+    animation: none;
+    width: 1.3ch;
+  }
+}
+
+/* Set by player.js when a station's websocket errors out -- the button
+   itself carries the failure (there's no separate status text). */
+.play-btn.error {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: white;
+}
+
+.rx-health {
+  margin-top: 0.6rem;
+  font-size: 0.78rem;
+  color: #888;
+  font-variant-numeric: tabular-nums;
+}
+
+.rx-health .dot {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: #22c55e;
+  margin-right: 0.4rem;
+  vertical-align: baseline;
+}
+
+.rx-health .dot.down {
+  background: #ef4444;
+}
+
+.rx-health .rx-warn {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.station-signal {
+  /* STEREO badge + signal bar, then the dBFS / SNR / AGC readout on its
+     own line (flex-basis:100% on .signal-text). */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.2rem 0.5rem;
+  margin-top: 0.2rem;
+  font-size: 0.72rem;
+  color: #888;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Always its own full-width line under the STEREO badge + bar, and never
+   wraps -- so a row's height doesn't change with the readout's length or
+   whether a `· muted` suffix is present. Clip with an ellipsis in the
+   (rare) case it can't fit a narrow screen. */
+.signal-text {
+  flex-basis: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* player.js toggles `hidden` until the first stats poll for a station;
+   the `display: flex` above would otherwise defeat it and leave an empty
+   bar on every idle row (now its own full-width line). */
+.station-signal[hidden] {
+  display: none;
+}
+
+/* Listener-gated decode: station isn't being decoded (nobody listening),
+   so its signal readout is frozen -- dim the whole row to say so. */
+.station-signal.is-idle {
+  opacity: 0.4;
+}
+
+.signal-bar {
+  width: 72px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+  overflow: hidden;
+  flex: none;
+}
+
+.signal-fill {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: #22c55e;
+  transition: width 0.5s ease, background 0.3s ease;
+}
+
+/* Fourth row of the middle column: RDS programme-service name + RadioText.
+   player.js keeps it `hidden` unless rx is decoding RDS for this station. */
+.station-rds {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  gap: 0.1rem 0.5rem;
+  margin-top: 0.15rem;
+  min-width: 0;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  /* Exactly one line -- blank while nothing is decoded (min-height holds
+     the space), clipped with an ellipsis when RadioText is long. A
+     fixed-height RDS line keeps the row height stable and lets the Play
+     button sit at a predictable vertical centre. */
+  min-height: 1.35em;
+  white-space: nowrap;
+  /* This line sits below the (raised) Play button's bottom edge, so it
+     doesn't need the button gutter -- claw back most of `.station`'s
+     padding-right so RadioText has more room before it ellipsises. */
+  margin-right: -5.5rem;
+}
+
+.station-rds[hidden] {
+  display: none;
+}
+
+.rds-ps {
+  flex: none;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+}
+
+/* RadioText can run to 64 chars -- clipped to one line (the full text is
+   in the row's title tooltip and on the lock screen). */
+.rds-rt {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: #888;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Phones: the body/station padding stacks up and squeezes the label column. */
+@media (max-width: 480px) {
+  body {
+    padding-left: 0.6rem;
+    padding-right: 0.6rem;
+  }
+
+  .station {
+    padding-left: 0.25rem;
+    padding-right: 6rem;
+    column-gap: 0.5rem;
+  }
+
+  .station-logo,
+  .brand-logo {
+    width: 40px;
+    height: 40px;
+  }
+
+  /* Half-length bar on phones -- the full 72px crowds the readout text. */
+  .signal-bar {
+    width: 36px;
+  }
+
+  /* Drop the label a touch so the longest name ("Golden Oldies Radio Network")
+     still leaves room for the badge on the same line. */
+  .station-label {
+    font-size: 0.85rem;
+  }
+
+
+  /* Slightly smaller STEREO badge on phones so it crowds the label less --
+     the long names (e.g. "Golden Oldies Radio Network") wrap it to a second line
+     and that's fine. */
+  .badge-stereo {
+    margin-left: 0.35rem;
+    padding: 0.08rem 0.32rem;
+    font-size: 0.58rem;
+    letter-spacing: 0.02em;
+  }
+}

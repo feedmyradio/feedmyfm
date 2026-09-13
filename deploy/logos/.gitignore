@@ -1,0 +1,8 @@
+# Operator-supplied broadcaster logos are trademarks -- keep them local.
+# Only the bundled fallback, the alias map, and the docs are tracked.
+*
+!.gitignore
+!README.md
+!_default.svg
+!_default.png
+!aliases.json

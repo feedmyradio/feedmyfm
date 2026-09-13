@@ -1,0 +1,5 @@
+# "Receiver up for scan/admin only" -- an explicit empty list is allowed:
+# the SDR, status port, GET /api/scan and the admin write endpoints all
+# come up, there is just no per-station DSP. Populate this from the
+# /admin band scan, then Validate & Save.
+stations: []

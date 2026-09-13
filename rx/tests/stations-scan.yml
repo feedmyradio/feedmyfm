@@ -1,0 +1,19 @@
+stations:
+- label: s0
+  freq: 94100000
+  port: 7355
+- label: s1
+  freq: 97700000
+  port: 7356
+- label: s2
+  freq: 100300000
+  port: 7357
+- label: s3
+  freq: 103500000
+  port: 7358
+- label: s4
+  freq: 103800000
+  port: 7359
+- label: s5
+  freq: 106700000
+  port: 7360

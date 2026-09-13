@@ -1,0 +1,64 @@
+# Deliberately a separate project from compose.rx.yml -- this stack can
+# run on a different machine than the SDR-facing feedmyfm-rx (see webui's
+# module docstring). It holds no config files -- webui reads the active
+# station list and backs the /admin editor via the feedmyfm-rx daemon's
+# HTTP port (RX_URL). If running on a different host than feedmyfm-rx,
+# point RX_URL at that host (and set its config.yml status.host +
+# FEEDMYFM_RX_ADMIN_PASSWORD), and make sure that host's config.yml
+# udp.host points at *this* machine so the station audio arrives here.
+name: feedmyfm
+
+services:
+  webui:
+    container_name: feedmyfm-webui
+    build:
+      context: ..
+      dockerfile: webui/Dockerfile
+    image: feedmyfm-webui:local
+    restart: unless-stopped
+    environment:
+      # feedmyfm-rx daemon HTTP port (config status.host/status.port): the
+      # listener reads its active-station plan here and the /admin editor
+      # proxies config/stations GET+PUT here. Same host by default.
+      - RX_URL=${RX_URL:-http://127.0.0.1:8082}
+      # Only needed for POST /active (listener-gated decode, decode.listener_gated
+      # in rx's config.yml): required whenever that rx's status.host is
+      # non-loopback (e.g. the split SDR-host/listener-host topology) --
+      # same value as FEEDMYFM_RX_ADMIN_PASSWORD on the rx host. Loopback
+      # rx doesn't check it, so it's harmless to set (or leave blank) then.
+      - FEEDMYFM_RX_ADMIN_PASSWORD=${FEEDMYFM_RX_ADMIN_PASSWORD:-}
+      # listener.codec: aac only -- ADTS frames dumped to the browser
+      # <audio> as an initial burst on connect. Helps Android/desktop start
+      # promptly; iOS Safari ignores it (it wall-clock pre-buffers ~5 s of
+      # any bare chunked stream before playing, regardless) so on an
+      # iOS-heavy audience keep this small -- it only adds standing
+      # latency there. 32 kHz / 1024-sample frames, so 24 ~= 0.75 s.
+      # Change + `up -d webui`, no rebuild.
+      - FEEDMYFM_AAC_PRIME_FRAMES=${FEEDMYFM_AAC_PRIME_FRAMES:-24}
+    # Bound to loopback only -- put your own HTTPS front end (reverse
+    # proxy / tunnel) in front of it as the only externally reachable
+    # entrypoint, so browsers always get HTTPS (AudioWorklet requires a
+    # secure context, which plain http:// from a non-localhost address
+    # never satisfies). See README "HTTPS".
+    command: ["--host", "127.0.0.1", "--port", "8080"]
+    volumes:
+      # Operator-supplied station logos, overlaid read-only onto the path
+      # webui serves from (/static/logos/). The image only bakes
+      # _default.svg; real broadcaster logos are a local drop-in here.
+      # Add/swap a file + `docker restart feedmyfm-webui`, no rebuild.
+      # See deploy/logos/README.md for the label -> file matching.
+      #
+      # LOGOS_DIR overrides where that drop-in directory lives -- e.g.
+      # broadcaster logos are trademarks, so a real logo set may live
+      # outside this repo entirely (a private per-deployment location)
+      # rather than in deploy/logos/. Whatever directory this points at
+      # must carry its own _default.svg / _default.png / aliases.json
+      # (copy deploy/logos/'s tracked ones as a starting point) -- it
+      # fully replaces the mount, it doesn't layer on top of it.
+      - ${LOGOS_DIR:-./logos}:/app/webui/static/logos:ro
+    # Only needed if this runs on the SAME machine as feedmyfm-rx and its
+    # UDP audio needs to reach this container from outside bridge
+    # networking (same reasoning as compose.rx.yml's service). If webui
+    # runs on a genuinely separate machine, drop this and just publish the
+    # UDP port range instead.
+    network_mode: host

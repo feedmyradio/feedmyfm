@@ -1,0 +1,4 @@
+stations:
+- label: Selftest FM
+  freq: 94200000
+  port: 7355

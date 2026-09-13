@@ -1,0 +1,158 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "feedmyfm"
+version = "0.1.0"
+description = "feedmyfm listener web UI (webui) for the feedmyfm-rx receiver"
+readme = "README.md"
+license = {text = "GPL-3.0-or-later"}
+requires-python = ">=3.12"
+keywords = ["fm-radio", "sdr", "audio-streaming", "udp"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Sound/Audio :: Capture/Recording",
+    "Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator",
+    "Topic :: System :: Hardware :: Hardware Drivers",
+]
+dependencies = []
+# The only Python here is `webui` (optional deps below). Config validation
+# and frequency planning live entirely in the `feedmyfm-rx` binary (rx/,
+# C++); webui reads the resolved plan from its HTTP port.
+
+[project.optional-dependencies]
+# webui: FastAPI listener UI. httpx reads the active station list from
+# the feedmyfm-rx daemon (GET /api/stations/active) and proxies the
+# /admin editor's requests through to it -- no config files on this side.
+webui = [
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.29.0",
+    "jinja2>=3.1.0",
+    "httpx>=0.27.0",
+    "typer>=0.9.0",
+    # AAC-LC listener streaming (config `listener.codec: aac`). PyAV's
+    # manylinux wheels bundle libavcodec's native LGPL `aac` encoder -- no
+    # apt package, no Dockerfile change. Unused in `pcm` mode.
+    "av>=12.0.0",
+]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+    "pre-commit>=3.0.0",
+]
+docs = [
+    "sphinx>=5.0.0",
+    "sphinx-rtd-theme>=1.2.0",
+    "myst-parser>=0.18.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/feedmyfm"
+Documentation = "https://feedmyfm.readthedocs.io/"
+Repository = "https://github.com/yourusername/feedmyfm"
+Issues = "https://github.com/yourusername/feedmyfm/issues"
+
+[project.scripts]
+feedmyfm-webui = "webui.main:app"
+
+[tool.setuptools]
+zip-safe = false
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["webui*"]
+
+[tool.setuptools.package-data]
+webui = ["templates/*", "static/*/*"]
+
+[tool.black]
+line-length = 88
+target-version = ['py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["webui"]
+known_third_party = ["fastapi", "pydantic", "typer", "uvicorn"]
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+show_error_codes = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+# `slow` tests are excluded from the default run (see the marker note). Run
+# everything with `make test-all` or `pytest -m ""`; only the slow set with
+# `pytest -m slow`.
+addopts = "-ra -q -m 'not slow'"
+testpaths = ["webui/tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+markers = [
+    # Spawns the feedmyfm-rx binary for a full synthetic-signal DSP run
+    # (--selftest / --stereo-selftest / --sweep / --snr-cal). The whole
+    # default suite is ~2 s; the two --snr-cal tests are ~80 s *each*.
+    #
+    # Why --snr-cal is fixed at ~80 s (not a machine-load issue): run_snr_cal
+    # in rx/src/main.cpp clamps --seconds up to a 3.0 minimum, then sweeps 13
+    # C/N points (cn_list) x a fresh 3 s process_synthetic() each = ~39 s of
+    # full-rate DSP -> ~80 s wall. Passing --seconds 1 does nothing. Tests
+    # pass; this is just runtime, not correctness. To speed up you'd trim
+    # cn_list to the 9-30 dB fit region or lower the clamp -- deferred.
+    "slow: end-to-end feedmyfm-rx DSP sweep; excluded by default (see note)",
+]
+
+[tool.coverage.run]
+source = ["webui"]
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+]

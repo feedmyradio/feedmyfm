@@ -1,0 +1,7 @@
+stations:
+- label: A
+  freq: 94200000
+  port: 7355
+- label: B
+  freq: 97500000
+  port: 7356

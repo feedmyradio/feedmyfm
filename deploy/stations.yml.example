@@ -1,0 +1,87 @@
+stations:
+# - label: Fresh Hits 89.0
+#   freq: 89000000
+#   port: 7355
+# - label: Classic FM 92.0
+#   freq: 92000000
+#   port: 7356
+# Alternative to commenting a station out: `enabled: false` keeps the entry
+# (and its port) reserved but decodes nothing for it -- handy for "off air
+# for now" without losing the freq/port when it's back. Every station needs
+# its own `port:` -- rx no longer auto-assigns one.
+#
+# An explicit empty list -- `stations: []` -- is also valid: the receiver
+# comes up for the band scan + admin endpoints only (no per-station DSP).
+# Populate it from the /admin band scan, then Validate & Save.
+#
+# Per-station keys, all optional except label/freq/port:
+#   enabled:  true (default) | false -- keep the entry but skip DSP for it
+#   stereo:   off (default) | true (always) | auto (blend on weak signal)
+#             overrides config.yml's global stereo.mode for this station only
+#   agc:      bool shorthand, or a mapping overriding config.yml's global agc
+#   squelch:  bool shorthand, or a mapping overriding config.yml's global squelch
+#   rds:      bool shorthand, or a mapping overriding config.yml's global rds
+- label: Radio One 87.7
+  freq: 87700000
+  port: 7355
+- label: Classic FM 88.9
+  freq: 88900000
+  port: 7356
+  stereo: auto          # off (default) | true (always) | auto (blend on weak signal)
+- label: Metro Two 89.3
+  freq: 89300000
+  port: 7357
+  agc: true             # bare bool shorthand -- enable/disable, all else default
+- label: Night Owl Radio 90.1
+  freq: 90100000
+  port: 7358
+  squelch: false        # bare bool shorthand
+- label: Pop Wave 90.4
+  freq: 90400000
+  port: 7359
+  rds: true             # bare bool shorthand
+- label: National Radio 91.5
+  freq: 91500000
+  port: 7360
+  agc:                  # mapping form -- overrides config.yml's global agc
+    enabled: true
+    target: 0.4
+    max_gain_db: 60
+    response_ms: 200
+- label: Youth FM 92.7
+  freq: 92700000
+  port: 7361
+  squelch:              # mapping form -- overrides config.yml's global squelch
+    enabled: true
+    open_snr_db: 8
+    hang_ms: 1500
+- label: Golden Oldies 92.9
+  freq: 92900000
+  port: 7362
+  rds:                  # mapping form -- overrides config.yml's global rds
+    enabled: true
+- label: Chart Radio 93.3
+  freq: 93300000
+  port: 7363
+  enabled: false        # reserved but not decoded -- keeps freq/port for later
+- label: Highway Radio 93.7
+  freq: 93700000
+  port: 7364
+- label: Golden Oldies+ 94.8
+  freq: 94800000
+  port: 7365
+- label: Sunrise Radio 101.6
+  freq: 101600000
+  port: 7366
+- label: Garden FM 101.7
+  freq: 101700000
+  port: 7367
+- label: Community Radio 103.1
+  freq: 103100000
+  port: 7368
+- label: City Radio 103.5
+  freq: 103500000
+  port: 7369
+- label: Town Radio 105.3
+  freq: 105300000
+  port: 7370

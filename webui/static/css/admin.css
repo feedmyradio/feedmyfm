@@ -1,0 +1,664 @@
+body {
+  max-width: 900px;
+}
+
+/* .auth-gate itself is unstyled here -- it's a splash-body/splash-card
+   (splash.css) when logged out, and `hidden` once logged in; admin.js
+   toggles that attribute. */
+
+.splash-back {
+  margin-top: 1.25rem;
+}
+
+.splash-back a {
+  color: #888;
+  font-size: 0.85rem;
+}
+
+#admin-content > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+#logout-btn {
+  flex: none;
+  padding: 0.3rem 0.8rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.auth-gate .auth-status {
+  margin: 1rem 0 0;
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.editor-text {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  font-size: 0.85rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--fg);
+  resize: vertical;
+}
+
+.editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.editor-actions button {
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.editor-actions button:disabled {
+  border-color: var(--border);
+  color: #888;
+  cursor: default;
+}
+
+.editor-status {
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.editor-result {
+  margin-top: 0.5rem;
+}
+
+.result-ok {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.result-warning {
+  color: #b45309;
+  margin: 0.2rem 0;
+}
+
+.result-error {
+  color: #dc2626;
+  margin: 0.2rem 0;
+  white-space: pre-wrap;
+}
+
+.reload-note {
+  color: #888;
+  font-size: 0.85rem;
+}
+
+/* --- stations.yml row editor ------------------------------------- */
+
+.stations-editor {
+  margin: 1.5rem 0;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.stations-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.stations-toolbar button {
+  padding: 0.35rem 0.8rem;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.stations-count {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.stations-count.is-dirty {
+  color: #b45309;
+}
+
+.stations-table-wrap {
+  overflow-x: auto;
+}
+
+.stations-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.85rem;
+}
+
+.stations-table th {
+  text-align: left;
+  font-weight: 600;
+  color: #888;
+  padding: 0.3rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.stations-table td {
+  padding: 0.2rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.stations-table input[type="text"],
+.stations-table input[type="number"],
+.stations-table select {
+  font: inherit;
+  padding: 0.25rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--bg);
+  color: var(--fg);
+  box-sizing: border-box;
+}
+
+.stations-table .col-label input {
+  width: 12rem;
+}
+
+.stations-table .col-freq input {
+  width: 5rem;
+}
+
+.stations-table .col-port input {
+  width: 5rem;
+}
+
+.stations-table .col-on {
+  text-align: center;
+}
+
+.station-row.is-off input[type="text"],
+.station-row.is-off .col-freq,
+.station-row.is-off .col-port {
+  opacity: 0.5;
+}
+
+.stations-table .col-adv button,
+.stations-table .col-ord button,
+.stations-table .col-del button {
+  font: inherit;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--fg);
+  border-radius: 5px;
+  padding: 0.15rem 0.4rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.stations-table .col-ord button {
+  padding: 0.15rem 0.3rem;
+}
+
+.stations-table .col-adv button.is-open {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.stations-table .del-btn {
+  color: #dc2626;
+  border-color: transparent;
+  font-size: 1.1rem;
+}
+
+.stations-table button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.station-adv td {
+  background: color-mix(in srgb, var(--fg) 4%, transparent);
+}
+
+.station-adv .adv-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-right: 1.25rem;
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.station-adv .adv-raw {
+  width: 15rem;
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+}
+
+.station-adv .adv-raw.is-bad {
+  border-color: #dc2626;
+}
+
+/* --- raw-YAML escape hatch (shared: stations + config) --------- */
+
+.raw-yaml {
+  margin-top: 1rem;
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.raw-yaml summary {
+  cursor: pointer;
+}
+
+.raw-yaml .editor-text {
+  margin-top: 0.5rem;
+  min-height: 8rem;
+}
+
+.raw-yaml-note {
+  margin: 0.4rem 0 0;
+  font-size: 0.78rem;
+  color: #888;
+}
+
+/* --- config.yml field form ------------------------------------- */
+
+.config-block {
+  margin: 0 0 0.25rem;
+}
+
+.config-block > summary {
+  padding: 0.4rem 0;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  color: var(--fg);
+  border-bottom: 1px solid var(--border);
+  list-style: none;
+}
+
+.config-block > summary::-webkit-details-marker {
+  display: none;
+}
+
+.config-block > summary::before {
+  content: "▸";
+  display: inline-block;
+  width: 1rem;
+  color: #888;
+  transition: transform 0.12s ease;
+}
+
+.config-block[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.config-block-absent {
+  margin-left: 0.5rem;
+  font-weight: 400;
+  font-size: 0.72rem;
+  color: #999;
+}
+
+.config-fields {
+  padding: 0.3rem 0 0.9rem 1rem;
+}
+
+.config-field {
+  display: grid;
+  grid-template-columns: minmax(9rem, 14rem) 9rem;
+  align-items: center;
+  gap: 0 1.5rem;
+  padding: 0.28rem 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+}
+
+.config-fields .config-field:last-child {
+  border-bottom: none;
+}
+
+.config-field > span {
+  font-size: 0.82rem;
+  color: #888;
+}
+
+.config-field input[type="number"],
+.config-field select {
+  font: inherit;
+  padding: 0.25rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--bg);
+  color: var(--fg);
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.config-field input[type="checkbox"] {
+  justify-self: start;
+}
+
+.config-count {
+  font-size: 0.8rem;
+  color: #b45309;
+}
+
+/* --- tabs ------------------------------------------------------- */
+
+.tabs {
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 1px solid var(--border);
+  margin: 1rem 0 1.25rem;
+}
+
+.tab-btn {
+  padding: 0.45rem 1rem;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  background: transparent;
+  color: #888;
+  cursor: pointer;
+  font-size: 0.95rem;
+  margin-bottom: -1px;
+}
+
+.tab-btn:hover {
+  color: var(--fg);
+}
+
+.tab-btn.is-active {
+  color: var(--fg);
+  border-color: var(--border);
+  border-bottom-color: var(--bg);
+  background: var(--bg);
+  font-weight: 600;
+}
+
+/* --- band scan ------------------------------------------------- */
+
+.bandscan {
+  margin: 0 0 1.25rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--fg) 3%, transparent);
+}
+
+.bandscan-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.bandscan-actions button {
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.bandscan-actions button:disabled {
+  border-color: var(--border);
+  color: #888;
+  cursor: default;
+}
+
+.bandscan-status {
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.bandscan-plot {
+  margin-top: 0.75rem;
+}
+
+.bandscan-plot svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  cursor: crosshair;
+}
+
+.bandscan-plot .cursor {
+  display: none;
+  pointer-events: none;
+}
+
+.bandscan-plot .cursor.on {
+  display: block;
+}
+
+.bandscan-plot .cursor line {
+  stroke: var(--fg);
+  stroke-width: 1;
+  opacity: 0.5;
+}
+
+.bandscan-plot .cursor circle {
+  fill: var(--fg);
+}
+
+.bandscan-plot .cursor text {
+  fill: var(--fg);
+  font-size: 10px;
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 3px;
+}
+
+.bandscan-plot .psd {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1;
+  opacity: 0.75;
+}
+
+.bandscan-plot .floor {
+  stroke: #888;
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+
+.bandscan-plot .grid {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.bandscan-plot .axis {
+  fill: #888;
+  font-size: 10px;
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+}
+
+.bandscan-plot .station {
+  stroke: #888;
+  stroke-width: 1;
+}
+
+/* disabled stations (enabled: false in stations.yml) -- their carrier is
+   still on air and reads as `configured`, so flag it red + dotted. */
+.bandscan-plot .station.disabled {
+  stroke: #dc2626;
+  stroke-width: 1.5;
+  stroke-dasharray: 1 2;
+}
+
+.bandscan-plot .carrier line {
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-dasharray: 3 3;
+}
+
+.bandscan-plot .carrier text {
+  fill: var(--fg);
+  font-size: 10px;
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  text-anchor: middle;
+}
+
+.bandscan-plot .carrier.configured line {
+  stroke: #888;
+}
+
+.bandscan-plot .carrier.configured.disabled line {
+  stroke: #dc2626;
+  stroke-dasharray: 1 2;
+}
+
+.bandscan-plot .carrier.configured.disabled text {
+  fill: #dc2626;
+}
+
+.bandscan-plot .carrier.new {
+  cursor: pointer;
+}
+
+.bandscan-plot .carrier.new:hover line {
+  stroke-width: 4;
+}
+
+.carrier-list {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 0.3rem 1.25rem;
+}
+
+.carrier-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  font-size: 0.85rem;
+  padding: 0.1rem 0;
+}
+
+.carrier-row .cr-freq {
+  font-weight: 600;
+  min-width: 4.5rem;
+}
+
+.carrier-row .cr-level,
+.carrier-row .cr-tag {
+  color: #888;
+}
+
+.carrier-row.configured {
+  color: #888;
+}
+
+.carrier-row.configured.disabled,
+.carrier-row.configured.disabled .cr-tag {
+  color: #dc2626;
+}
+
+.carrier-row .cr-add {
+  margin-left: auto;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  border-radius: 5px;
+  padding: 0.1rem 0.5rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.carrier-row .cr-add:hover {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.carrier-list-empty {
+  margin: 0.75rem 0 0;
+  color: #888;
+  font-size: 0.85rem;
+}
+
+/* --- live signal tab ------------------------------------------------- */
+
+.signal-live {
+  margin: 1.5rem 0;
+}
+
+.signal-live-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.signal-live-status {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.rx-health-admin {
+  font-size: 0.85rem;
+  padding: 0.4rem 0.6rem;
+  margin-bottom: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+}
+
+.signal-table-wrap {
+  overflow-x: auto;
+}
+
+.signal-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.signal-table th {
+  text-align: left;
+  font-weight: 600;
+  color: #888;
+  padding: 0.3rem 0.55rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.signal-table td {
+  padding: 0.25rem 0.55rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.signal-table .col-label {
+  white-space: normal;
+}
+
+.signal-table tr.is-idle td {
+  opacity: 0.45;
+}

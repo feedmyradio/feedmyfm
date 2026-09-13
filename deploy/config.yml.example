@@ -1,0 +1,159 @@
+sdr:
+  ip: 192.0.2.14
+  gain_db: 21
+  # gain_mode: manual (default) | slow_attack | fast_attack | hybrid | auto_sw.
+  # manual = fixed gain_db. slow/fast/hybrid = the AD9361's own whole-band AGC
+  # (hybrid is clip-protection only); takes effect on receiver restart.
+  # auto_sw = chip stays in manual; a software loop regulates the composite
+  # peak toward a headroom target instead (avoids one strong signal pumping
+  # every station's gain, unlike the chip AGC).
+  # gain_mode: auto_sw
+  # `agc:` below is only read (and only accepted) under gain_mode: auto_sw.
+  # agc:
+  #   target_dbfs: -9       # regulate the composite peak EMA to here
+  #   max_dbfs: -3          # peak above this steps the gain down immediately
+  #   min_gain_db: 0        # lower clamp (upper clamp is sdr.gain_db)
+  #   step_db: 1            # gain change per adjustment
+  #   interval_ms: 2000     # min spacing between step-ups / soft step-downs
+  #   hysteresis_db: 3      # step up only when the peak is this far below target
+  #   clip_ppm_trip: 5      # clipped-sample rate forcing an immediate step down
+radio:
+  center_freq: 98010000
+  samp_rate: 20480000
+channelizer:
+  num_channels: 64
+  oversample: 2
+  atten_db: 60
+  # firpfbchr prototype filter semi-length (taps = 2*M*m). 12 suits the
+  # FFTW-backed libliquid 1.5 in the Docker image (~84% of the real-time
+  # budget for the full band). Drop to 8 if you `make build-rx` against
+  # Ubuntu's slower libliquid 1.3.2, where 12 doesn't make budget.
+  proto_semilen_m: 12
+  # IIO buffer size. Must be a multiple of num_channels/oversample so it
+  # slices evenly into the channelizer.
+  block_size: 131072
+fm:
+  deviation: 75000
+  tau: 50e-6
+  intermediate_rate: 64000
+  # Transition width of the pre-demod adjacent-channel filter, and the
+  # guard band the channelizer bin-width check requires on top of Carson.
+  predemod_transition: 20000
+  # Weak-signal demod, all optional (default: open-loop discriminator, no
+  # declick, AFC + limiter on). Validate with `feedmyfm-rx --demod-cal` on
+  # this DSP baseline before relying on any of these.
+  # demod: discriminator (default) | pll -- pll is an experimental
+  #   threshold-extension demod for ~1-2 dB better weak-signal SNR;
+  #   mono stations only (forced back to discriminator otherwise).
+  # declick: false (default) | true -- suppress discriminator 2*pi phase-slip
+  #   clicks near threshold (impulsive click detector).
+  # declick_sigma: 5.0 -- click detection threshold, must be > 1.0.
+  # pll_bw_hz: 0 -- pll demod loop bandwidth, Hz; only meaningful with
+  #   demod: pll.
+  # afc: true (default) | false -- carrier-drift tracking; false pins the
+  #   fine mixer static, for signals too multipath-corrupted for the loop.
+  # limiter: true (default) | false -- look-ahead limiter; false falls back
+  #   to the tanh soft-clip.
+audio:
+  rate: 32000
+  bandwidth: 15000
+  stop_bandwidth: 19000
+udp:
+  host: 127.0.0.1
+  mtu: 1316
+# Soft AGC on the final audio (levels quiet vs. loud stations). Per-station
+# override in stations.yml: `agc: false` or `agc: {target: 0.3, ...}`.
+agc:
+  enabled: true
+  target: 0.20         # output RMS target, 0..1 -- keeps program peaks under
+                       # the 0.8 tanh soft-clip knee (was 0.5: lightly-processed
+                       # stations like Klara swing +7..+16 dB of gain, so the
+                       # first loud transient after a quiet passage clipped)
+  max_gain_db: 6      # cap so a dead channel isn't amplified to hiss (was 30:
+                       # on wide-dynamic-range stations like Klara the AGC rode
+                       # up in long quiet classical passages until the residual
+                       # noise floor was audible). Attack/release time doesn't
+                       # help there -- a multi-second silence lets the gain fully
+                       # settle to the cap, so the cap is the only lever.
+                       # Broadcast FM is heavily compressed; the few genuinely
+                       # quiet stations only need a few dB of makeup -- 16 is
+                       # enough and keeps silence sounding like silence.
+  response_ms: 400     # attack/release time constant; slower release trades a
+                       # touch of loudness tracking for less transient overshoot
+# Squelch: mute a station when the ultrasonic-noise-ratio metric says
+# there's no carrier. Opt-in -- watch snr_db on the status port with it
+# off, then set open_snr_db a few dB below your weakest wanted station.
+# Per-station override: `squelch: true` or `squelch: {open_snr_db: 12}`.
+squelch:
+  enabled: false
+  open_snr_db: 15
+  hang_ms: 800
+# Stereo multiplex decode, for stations marked `stereo: true` (always
+# stereo) or `stereo: auto` (blend L/R back toward mono when the pilot is
+# gone or the signal is weak). Watch pilot_db / stereo_frac on the status
+# port to tune. `true`/`auto` stations always emit 4-byte L/R frames.
+stereo:
+  mode: auto
+  pilot_threshold_db: -30  # 19 kHz pilot power (dBc of composite) to lock stereo
+  blend_snr_lo_db: 44      # auto: full mono at/below this composite snr_db
+  blend_snr_hi_db: 51      # auto: full stereo at/above this composite snr_db
+  pilot_pll: true          # false: normalise-and-square carrier recovery
+                           # instead of a PLL locked to the 19 kHz pilot
+# Status-port snr_db is always a physically-referenced, program-independent
+# SNR (guard-band noise-PSD estimate) comparable to bench FM-tuner specs --
+# costs ~2 elliptic IIRs per station at channel_rate. There is no opt-out;
+# squelch_metric_db separately always carries the raw ultrasonic-noise-ratio
+# proxy the squelch state machine uses. System-wide only -- the calibrated
+# path is a few % of the whole pool, so there's no per-station knob.
+# After changing channelizer.* / samp_rate / fm.deviation / fm.tau /
+# audio.bandwidth|stop_bandwidth / fm.predemod_transition, re-fit with
+# `feedmyfm-rx --snr-cal` and set `k_noise:` here (no rebuild needed).
+snr:
+  k_noise: 2.19
+# Listener audio format, system-wide. `pcm` (default): raw s16le -> WebSocket
+# -> AudioWorklet in the browser; lowest latency, but audio stops when a phone
+# backgrounds/locks the page. `aac`: webui transcodes to AAC-LC and the browser
+# plays it in a media element -- background & lock-screen playback (with
+# next/prev station skip) work; adds ~1-3 s latency and a few % of a webui-host
+# core per station being listened to. feedmyfm-rx's UDP output is identical
+# either way; this key is validated by feedmyfm-rx but consumed by webui.
+listener:
+  codec: aac            # pcm | aac
+  aac_bitrate_mono: 96000
+  aac_bitrate_stereo: 128000
+# Localhost JSON status endpoint (0 = off): GET http://127.0.0.1:<port>/
+# -> SDR link + per-block health + per-station rf_dbfs/snr_db/squelch/agc.
+# `public.*` gates groups out of that UNAUTHENTICATED frame (which webui
+# proxies to the public listener page); off = the group is absent, not
+# just hidden client-side. GET /api/status/full (admin auth) and the
+# /admin Signal tab always see everything. Default when the block is
+# omitted: rds_text on, rest off.
+status:
+  port: 8082
+  host: 0.0.0.0
+  public:              # matches prod's live hardened posture (set via /admin)
+    signal: false      # per-station rf_dbfs/snr_db/squelch/agc/afc/high_cut/multipath/demod/declick
+    stereo: false      # stereo_frac -- the live STEREO badge (off => badge hidden)
+    pilot: false       # pilot_db / pilot_lock / pilot_hz -- the 19 kHz detail behind it
+    rds_text: true     # rds.ps/rt/ptyn/pty/tp/ta -- now-playing + phone lock-screen text
+    rds_diag: false    # rds.pi / ber / groups_per_sec / groups_ok / ct
+    sdr_health: false  # the whole `sdr` object -- the receiver-health banner
+# Passive band scan: GET <status.port>/api/scan runs an averaged wideband
+# periodogram of the SDR's current span and returns the PSD + a list of
+# detected FM carriers (the /admin page draws it and lets you click a
+# carrier to add a station). The FFT only runs while a scan request is
+# pending -- idle cost is one branch per block -- but a scan briefly adds
+# load and can glitch audio on a receiver already near the RT budget.
+# `scan: false` disables the endpoint entirely.
+scan:
+  enabled: true
+  nfft: 4096          # FFT size (power of two, 256-65536); bin width =
+                      # samp_rate / nfft (~5 kHz here). 8192 halves that at
+                      # ~2x the per-scan FFT cost.
+  average_ms: 4000    # how long each scan accumulates before returning
+  threshold_db: 8     # a carrier must clear the noise floor by this much
+
+decode:
+  listener_gated: true
+
+rds: true

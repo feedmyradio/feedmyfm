@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>feedmyfm admin</title>
+  <link rel="icon" type="image/svg+xml" href="/static/img/favicon.svg">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="/static/css/splash.css">
+  <link rel="stylesheet" href="/static/css/admin.css">
+</head>
+<body>
+  <section class="auth-gate splash-body">
+    <div class="splash-card">
+      <img class="splash-logo" src="/static/img/favicon.svg" alt="" width="64" height="64">
+      <h1>feedmyfm</h1>
+      <p class="splash-tagline">Admin console.</p>
+      <p class="splash-subline">Enter the admin password to continue.</p>
+      <form id="login-form" class="splash-form">
+        <input type="password" id="admin-password" autocomplete="current-password" placeholder="Admin password" autofocus required>
+        <button type="submit">Log in</button>
+      </form>
+      <p class="auth-status"></p>
+      <p class="splash-back"><a href="/">&larr; back to stations</a></p>
+    </div>
+  </section>
+
+  <main id="admin-content" hidden>
+    <header>
+      <div class="brand">
+        <img class="brand-logo" src="/static/img/favicon.svg" alt="" width="48" height="48">
+        <div class="brand-text">
+          <h1>feedmyfm</h1>
+          <p class="subtitle">Admin</p>
+        </div>
+      </div>
+      <button type="button" id="logout-btn">Log out</button>
+    </header>
+
+    <nav class="tabs" role="tablist">
+      <button type="button" class="tab-btn" data-tab="stations" role="tab">Stations</button>
+      <button type="button" class="tab-btn" data-tab="signal" role="tab">Signal</button>
+      <button type="button" class="tab-btn" data-tab="config" role="tab">Server config</button>
+    </nav>
+
+    <div class="tab-panel" data-tab="stations" role="tabpanel">
+      <section class="bandscan" id="bandscan">
+        <div class="bandscan-actions">
+          <button type="button" id="scan-btn">Scan</button>
+          <button type="button" id="scan-add-all" disabled>Add all detected carriers</button>
+          <span class="bandscan-status"></span>
+        </div>
+        <div class="bandscan-plot" hidden></div>
+      </section>
+
+      <section class="stations-editor" id="stations-editor">
+        <div class="stations-toolbar">
+          <button type="button" id="station-add">+ Add station</button>
+          <span class="stations-count"></span>
+        </div>
+        <div class="stations-table-wrap">
+          <table class="stations-table">
+            <thead>
+              <tr>
+                <th class="col-on" title="Uncheck to keep the entry in the file but stop decoding it (enabled: false)">On</th>
+                <th class="col-label">Label</th>
+                <th class="col-freq">MHz</th>
+                <th class="col-port">Port</th>
+                <th class="col-stereo">Stereo</th>
+                <th class="col-adv"></th>
+                <th class="col-ord"></th>
+                <th class="col-del"></th>
+              </tr>
+            </thead>
+            <tbody id="stations-rows"></tbody>
+          </table>
+        </div>
+        <div class="editor-actions">
+          <button type="button" class="validate-btn" data-kind="stations">Validate</button>
+          <button type="button" class="save-btn" data-kind="stations">Save</button>
+          <button type="button" class="cancel-btn" data-kind="stations" title="Discard unsaved changes and reload the saved list" disabled>Cancel</button>
+          <span class="editor-status" data-kind="stations"></span>
+        </div>
+        <div class="editor-result" data-kind="stations"></div>
+        <details class="raw-yaml">
+          <summary>Raw YAML — stations.yml</summary>
+          <textarea class="editor-text stations-yaml-text" spellcheck="false" rows="16"></textarea>
+          <p class="raw-yaml-note">
+            This is what Save writes. Editing here updates the table above;
+            table edits re-render this.
+          </p>
+        </details>
+      </section>
+
+      <p class="reload-note">
+        Saved changes are picked up by the receiver within ~2 seconds (it polls
+        both files for changes) -- no restart needed. If a save is rejected, the
+        receiver keeps running on its current config untouched.
+      </p>
+    </div>
+
+    <div class="tab-panel" data-tab="signal" role="tabpanel" hidden>
+      <section class="signal-live" id="signal-live">
+        <div class="signal-live-head">
+          <span class="signal-live-status">not loaded</span>
+        </div>
+        <div class="rx-health-admin" hidden></div>
+        <div class="signal-table-wrap">
+          <table class="signal-table">
+            <thead>
+              <tr>
+                <th class="col-label">Station</th>
+                <th>Port</th>
+                <th>State</th>
+                <th title="Raw RF level of this station's channel, dB below the tuner's full scale">RF dBFS</th>
+                <th title="Calibrated, program-independent SNR (SNR_MANDATORY_PLAN.md)">SNR dB</th>
+                <th title="Squelch: metric dB, or 'muted' when closed">Squelch</th>
+                <th title="Signed AGC make-up gain">AGC dB</th>
+                <th title="Carrier-drift correction folded into the tuner">AFC Hz</th>
+                <th title="Weak-signal treble roll-off corner">HiCut kHz</th>
+                <th title="Normalised IF-envelope ripple, 0-100%">MP %</th>
+                <th title="Demodulator in use">Demod</th>
+                <th title="Live stereo state / blend fraction, plus 19 kHz pilot power &amp; lock">Stereo</th>
+                <th title="RDS: PS, PI, PTY, block-error rate, RadioText">RDS</th>
+              </tr>
+            </thead>
+            <tbody id="signal-rows"></tbody>
+          </table>
+        </div>
+        <p class="reload-note">
+          Live from the receiver's status port, refreshed every 2.5&nbsp;s while
+          this tab is open. This view always shows every field, regardless of the
+          <em>Listener-page status visibility</em> toggles on the Server config
+          tab &mdash; those only control what the public listener page receives.
+        </p>
+      </section>
+    </div>
+
+    <div class="tab-panel" data-tab="config" role="tabpanel" hidden>
+      <section class="config-editor" id="config-editor">
+        <div class="config-blocks"></div>
+        <div class="editor-actions">
+          <button type="button" class="validate-btn" data-kind="config">Validate</button>
+          <button type="button" class="save-btn" data-kind="config">Save</button>
+          <button type="button" class="cancel-btn" data-kind="config" title="Discard unsaved changes and reload the saved config" disabled>Cancel</button>
+          <span class="editor-status" data-kind="config"></span>
+          <span class="config-count"></span>
+        </div>
+        <div class="editor-result" data-kind="config"></div>
+        <details class="raw-yaml">
+          <summary>Raw YAML — config.yml</summary>
+          <textarea class="editor-text" spellcheck="false" rows="24"></textarea>
+          <p class="raw-yaml-note">
+            This is what Save writes. Editing here updates the fields above;
+            field edits re-render this. Comments are not kept. Listen ports /
+            hostnames have no field &mdash; edit them here.
+          </p>
+        </details>
+      </section>
+      <p class="reload-note">
+        A change here is picked up on the receiver's next config poll (~2 s); a
+        rejected save leaves it running untouched.
+      </p>
+    </div>
+  </main>
+
+  <script src="/static/js/vendor/js-yaml-4.1.0.min.js?v=1"></script>
+  <script src="/static/js/admin.js?v=13"></script>
+</body>
+</html>

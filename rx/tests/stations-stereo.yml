@@ -1,0 +1,5 @@
+stations:
+- label: Stereo Selftest
+  freq: 94200000
+  port: 7355
+  stereo: auto

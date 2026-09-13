@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>feedmyfm</title>
+  <link rel="icon" type="image/svg+xml" href="/static/img/favicon.svg">
+  <link rel="stylesheet" href="/static/css/style.css?v=24">
+  {% if listener and listener.codec == 'aac' %}
+  <link rel="preload" as="image" href="/static/logos/_default.png">
+  {% endif %}
+</head>
+<body data-listener-codec="{{ listener.codec if listener else 'pcm' }}">
+  <header>
+    <div class="brand">
+      <img class="brand-logo" src="/static/img/favicon.svg" alt="" width="48" height="48">
+      <div class="brand-text">
+        <h1>feedmyfm</h1>
+        <p class="subtitle">Live FM stations</p>
+      </div>
+    </div>
+    <div class="volume-control">
+      <label for="volume-slider">Volume</label>
+      <input type="range" id="volume-slider" min="0" max="100" value="100">
+    </div>
+    <div id="rx-health" class="rx-health" hidden></div>
+  </header>
+
+  <!-- Kept in the DOM and merely offscreen rather than display:none --
+       some browsers won't attach a media session to a hidden element. -->
+  <audio id="aac-audio" class="aac-audio-el" preload="metadata" playsinline></audio>
+
+  {% if not stations %}
+  <p class="empty">No stations are currently active. Check the receiver's config.</p>
+  {% else %}
+  <ul class="stations">
+    {% for s in stations %}
+    <li class="station" data-port="{{ s.port }}" data-label="{{ s.label }}" data-artwork="{{ s.artwork }}">
+      <img class="station-logo" src="{{ s.logo }}" alt="" loading="lazy"
+           onerror="this.onerror=null; this.src='/static/logos/_default.svg'">
+      <div class="station-info">
+        <span class="station-headline">
+          <span class="station-label">{{ s.label }}</span>
+          <span class="station-freq">{{ "%.1f"|format(s.freq / 1e6) }} MHz</span>
+        </span>
+        <span class="station-signal" hidden>
+          {% if s.stereo %}<span class="badge-stereo{% if s.stereo_mode == 'auto' %} is-mono{% endif %}" data-mode="{{ s.stereo_mode }}" title="{% if s.stereo_mode == 'auto' %}Stereo (auto blend){% else %}Stereo{% endif %}">STEREO</span>{% endif %}
+          <span class="signal-bar"><span class="signal-fill"></span></span>
+          <span class="signal-text"></span>
+        </span>
+        <span class="station-rds" hidden></span>
+      </div>
+      <button class="play-btn" type="button">Play</button>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  <script type="module" src="/static/js/player.js?v=20"></script>
+</body>
+</html>

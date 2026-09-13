@@ -1,0 +1,8 @@
+# Real broadcaster logos live in deploy/logos/ (bind-mounted over this dir
+# at runtime). Only the baked-in fallback and this note are tracked here;
+# anything else dropped in this spot stays local.
+*
+!.gitignore
+!README.md
+!_default.svg
+!_default.png

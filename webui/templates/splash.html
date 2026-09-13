@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>feedmyfm</title>
+  <link rel="icon" type="image/svg+xml" href="/static/img/favicon.svg">
+  <link rel="stylesheet" href="/static/css/style.css?v=23">
+  <link rel="stylesheet" href="/static/css/splash.css">
+</head>
+<body class="splash-body">
+  <main class="splash-card">
+    <img class="splash-logo" src="/static/img/favicon.svg" alt="" width="64" height="64">
+    <h1>feedmyfm</h1>
+    <p class="splash-tagline">Live FM, streamed from the source.</p>
+    <p class="splash-subline">This station list is password-protected.</p>
+
+    <form class="splash-form" method="post" action="/login">
+      <input type="password" name="password" placeholder="Password" autocomplete="current-password" autofocus required>
+      <button type="submit">Listen</button>
+    </form>
+    {% if error %}
+    <p class="splash-error">Incorrect password.</p>
+    {% endif %}
+  </main>
+</body>
+</html>

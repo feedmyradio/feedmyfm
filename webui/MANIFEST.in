@@ -1,0 +1,12 @@
+include README.md
+include LICENSE
+recursive-include webui *.py *.html *.css *.js
+global-exclude *.pyc
+global-exclude __pycache__
+global-exclude *.pyo
+global-exclude .git
+global-exclude .tox
+global-exclude .coverage
+global-exclude htmlcov
+global-exclude .mypy_cache
+global-exclude .pytest_cache

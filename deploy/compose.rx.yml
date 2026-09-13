@@ -1,0 +1,52 @@
+# The receiver: the standalone liquid-dsp feedmyfm-rx (rx/). It parses
+# config.yml + stations.yml itself.
+#
+#   docker compose -f deploy/compose.rx.yml up -d --build
+#
+# The web stack (deploy/compose.web.yml) works against this unchanged.
+#
+# Its own project name, deliberately: compose.web.yml uses a different
+# project, so a `docker compose -f deploy/compose.rx.yml down` only ever
+# touches the receiver.
+name: feedmyfm-rx
+
+services:
+  rx:
+    container_name: feedmyfm-rx
+    build:
+      context: ..
+      dockerfile: rx/Dockerfile
+      # Bump to `native` for a build pinned to this host's CPU, or lower
+      # (x86-64-v2, ...) for older hardware.
+      args:
+        MARCH: x86-64-v3
+    image: feedmyfm-rx:local
+    restart: unless-stopped
+    environment:
+      # Password for the daemon's config/stations write endpoints on
+      # status.port (HTTP Basic, any username). Unset => those endpoints
+      # return 503, but GET / and GET /api/stations/active still work.
+      # This is what backs the webui /admin editor.
+      - FEEDMYFM_RX_ADMIN_PASSWORD=${FEEDMYFM_RX_ADMIN_PASSWORD:-}
+    volumes:
+      # :rw -- the daemon rewrites these in place (truncate + write, no
+      # rename) on an admin PUT, so a single-file bind mount stays in sync
+      # both ways.
+      - ./config.yml:/config/config.yml:rw
+      - ./stations.yml:/config/stations.yml:rw
+    # Same reason as compose.web.yml's services: the receiver sends
+    # UDP to config.udp.host (its own loopback) and talks to the SDR over
+    # the network backend -- both need the host's network namespace.
+    network_mode: host
+    # Overrides the image's default CMD only to add --watch: a config.yml /
+    # stations.yml edit (e.g. via the webui admin) restarts the receiver in
+    # place, ~1-3 s audio gap; an edit that doesn't validate is logged and
+    # ignored. All tuning (channelizer.proto_semilen_m, ...) lives in
+    # config.yml -- no CLI overrides here. Add --threads N on a slow host if
+    # it can't keep up (FMRX_TIMING=1 env prints the per-block budget).
+    command:
+      - "--config"
+      - "/config/config.yml"
+      - "--stations"
+      - "/config/stations.yml"
+      - "--watch"

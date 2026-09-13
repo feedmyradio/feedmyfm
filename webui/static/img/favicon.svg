@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#071B3A"/>
+    <stop offset="1" stop-color="#0A55A8"/>
+  </linearGradient>
+  <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1">
+    <stop stop-color="#F2F7FB"/><stop offset="1" stop-color="#A9C2D8"/>
+  </linearGradient>
+</defs>
+
+<rect x="4" y="4" width="120" height="120" rx="28" fill="url(#bg)"/>
+
+<!-- radio waves -->
+<g fill="none" stroke="#78C7FF" stroke-width="7" stroke-linecap="round">
+  <path d="M39 42 Q26 56 39 70"/>
+  <path d="M89 42 Q102 56 89 70"/>
+  <path d="M27 31 Q7 56 27 81"/>
+  <path d="M101 31 Q121 56 101 81"/>
+</g>
+
+<!-- broadcast tower -->
+<circle cx="64" cy="29" r="10" fill="#FF3B30"/>
+<circle cx="61" cy="26" r="3.5" fill="#FFD1CE" opacity=".8"/>
+<path d="M64 39 L38 102 H90 Z" fill="url(#metal)" stroke="#061A38" stroke-width="5" stroke-linejoin="round"/>
+<path d="M49 88 L64 63 L79 88 M46 102 L64 63 L82 102" fill="none" stroke="#0A55A8" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+
+<!-- base / streaming waves -->
+<path d="M28 104 Q42 94 56 104 Q70 114 84 104 Q98 94 108 102 Q100 118 64 120 Q30 118 20 104 Q24 102 28 104Z" fill="#1394E8"/>
+<path d="M29 108 Q43 100 57 109 Q70 117 84 109 Q97 101 106 107" fill="none" stroke="#8DDBFF" stroke-width="5" stroke-linecap="round"/>
+</svg>
